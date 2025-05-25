@@ -6,9 +6,20 @@ def create_qr_matrix():
     celdas alrededor de la matriz QR.
     """
     size = 33
-    qr_matrix = [[0 for _ in range(size)] for _ in range(size)]
-    qr_matrix[28][27] = 1  # Se reserva la celda (29,28) para el formato
+    qr_matrix = [[None for _ in range(size)] for _ in range(size)]
     return qr_matrix
+
+def rellenar_zona_silencio(matriz):
+    """
+    Rellena la zona de silencio (borde de 4 módulos) con ceros.
+    """
+    size = len(matriz)
+
+    for y in range(size):
+        for x in range(size):
+            if x < 4 or x >= size - 4 or y < 4 or y >= size - 4:
+                matriz[y][x] = 0
+
 
 def print_qr_matrix(matrix):
     for row in matrix:
@@ -20,21 +31,23 @@ def patronesDeDeteccion(matriz):
     se agrega 3 patrones de detección en las esquinas de la matriz QR.
     """
     patron = [
-        [1, 1, 1, 1, 1, 1, 1],
-        [1, 0, 0, 0, 0, 0, 1],
-        [1, 0, 1, 1, 1, 0, 1],
-        [1, 0, 1, 1, 1, 0, 1],
-        [1, 0, 1, 1, 1, 0, 1],
-        [1, 0, 0, 0, 0, 0, 1],
-        [1, 1, 1, 1, 1, 1, 1]
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 1, 1, 1, 1, 1, 1, 1, 0],
+        [0, 1, 0, 0, 0, 0, 0, 1, 0],
+        [0, 1, 0, 1, 1, 1, 0, 1, 0],
+        [0, 1, 0, 1, 1, 1, 0, 1, 0],
+        [0, 1, 0, 1, 1, 1, 0, 1, 0],
+        [0, 1, 0, 0, 0, 0, 0, 1, 0],
+        [0, 1, 1, 1, 1, 1, 1, 1, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
     ]
 
-    for i in range(7):
-        for j in range(7):
+    for i in range(9):
+        for j in range(9):
             val = patron[i][j]
-            matriz[4 + i][4 + j] = val  # superior izquierda
-            matriz[4 + i][22+j] = val  # superior derecha
-            matriz[22+i][4 + j] = val  # inferior izquierda
+            matriz[3 + i][3 + j] = val  # superior izquierda
+            matriz[3 + i][21+j] = val  # superior derecha
+            matriz[21+i][3 + j] = val  # inferior izquierda
 
 def patronDeAlineacion(matriz):
 
@@ -60,7 +73,7 @@ def lineas_sincronizacion(matriz):
     que pasa por el centro de los patrones de detección.
     """
 
-    for i in range(12, 22):
+    for i in range(12, 23):
         matriz[10][i-1] = i % 2  # línea horizontal
         matriz[i-1][10] = i % 2  # línea vertical
 
@@ -106,9 +119,11 @@ def mostrar_matriz_grafica(matriz, modulo=10):
             if valor == 1:
                 color = "black"
             elif valor == 'R':  # Módulos reservados (formato)
-                color = "grey"
-            else:
+                color = "blue"
+            elif valor == 0:
                 color = "white"
+            else: 
+                color = "grey"
             x0 = x * modulo
             y0 = y * modulo
             x1 = x0 + modulo
@@ -116,6 +131,18 @@ def mostrar_matriz_grafica(matriz, modulo=10):
             canvas.create_rectangle(x0, y0, x1, y1, fill=color, outline="")
 
     ventana.mainloop()
+
+def generar_matrix():
+    # Crear la matriz base
+    qr = create_qr_matrix()
+    
+    # Aplicar los patrones sobre la matriz
+    patronesDeDeteccion(qr)
+    rellenar_zona_silencio(qr)
+    patronDeAlineacion(qr)
+    lineas_sincronizacion(qr)
+    reservar_modulos_especiales(qr)
+    return qr
 
 
 
